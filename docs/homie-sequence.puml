@@ -1,0 +1,81 @@
+@startuml
+title Homie MQTT Orchestration for TM Testing Sequence with Model Type
+
+' We are using microsquad/ as the Homie root
+
+actor "Child/User" as User
+participant "Web Interface (UI)" as UI
+box "Homie Device (Web TS Manager)" #LightBlue
+    participant "Manager Logic" as Manager
+    participant "Prediction Loop (rAF)" as Predictor
+end box
+database "TensorFlow.js Model" as Model
+database "Input Stream (Cam/Mic)" as Input
+database "MQTT Broker" as Broker
+participant "Central Controller (Server)" as Controller
+
+== 1. Device Initialization (Web Interface Startup) ==
+Manager -> Broker : publish (microsquad/model-tester-client-[id]/node/$state): init
+Manager -> Broker : publish (microsquad/model-tester-client-[id]/node/$nodes, $properties, $config)
+Manager -> Broker : publish (microsquad/model-tester-client-[id]/node/$state): ready
+Controller -> Broker : subscribe (microsquad/model-tester-client-[id]/node/#)
+
+== 2. UI View & Model Type Orchestration ==
+Controller -> Broker : publish (homie/.../ui-control/model-type/set): "image" / "audio" / "pose"
+Broker -> Manager : Forward model-type payload
+activate Manager
+
+Manager -> UI : Select appropriate UI/Input elements
+alt model-type is "image" or "pose"
+    Manager -> Input : Initialize Camera Input Stream
+else model-type is "audio"
+    Manager -> Input : Initialize Microphone Input Stream
+end
+
+Controller -> Broker : publish (homie/.../ui-control/switch/set): "model-test"
+Broker -> Manager : Forward "model-test" payload
+Manager -> UI : executeDOMChange(show 'model-test' UI)
+UI --> User : View switches to Model Test interface (e.g., showing camera feed)
+
+== 3. Test Start Orchestration ==
+User -> UI : Clicks "App Ready"
+Controller -> Broker : publish (microsquad/model-tester-client-[id]/node/game/start-cmd): [sequence_name]
+Broker -> Manager : Forward start-cmd payload
+
+== 4. Sequence Loop: For Each Prompt ==
+loop Sequence of Prompts (N times)
+    Manager -> Manager : Set Target Class (Ground Truth)
+    Manager -> Manager : Start Prompt Timer (performance.now())
+    
+    Manager -> Broker : publish (homie/.../game/current-target): [Class Name]
+    Manager -> Broker : publish (homie/.../game/current-prompt-idx): [Index]
+    
+    Manager -> UI : State: PROMPTING ("Show me X")
+    
+    activate Predictor
+    loop Continuous Prediction (via requestAnimationFrame)
+        Predictor -> Input : Get Frame/Audio Data
+        Model --> Predictor : Prediction (Confidence)
+        
+        alt Success or Failure Trigger Occurs
+            Predictor -> Manager : Trigger (Success/Timeout)
+            deactivate Predictor
+            break
+        end
+        Predictor -> Manager : publish (homie/.../game/time-elapsed)
+    end
+
+    Manager -> Manager : Stop Prompt Timer
+    Manager -> Manager : Assemble PromptResult JSON
+    
+    Manager -> Broker : publish (homie/.../prompt-results/log): [Result JSON Payload]
+    Broker -> Controller : Forward Result JSON
+end
+
+== 5. Final Logging & Completion ==
+Manager -> Manager : Calculate Final Sequence Metrics
+Manager -> Broker : publish (microsquad/model-tester-client-[id]/node/$state): finished
+deactivate Manager
+
+Controller -> Controller : Aggregate and Analyze all /prompt-results/log payloads
+@enduml
