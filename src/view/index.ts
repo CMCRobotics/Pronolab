@@ -14,4 +14,6 @@ client.on('connect', () => {
     const view = new HomieView(container, client);
     view.init();
     client.subscribe('homie/+/ui-control/switch/set');
+    client.subscribe('homie/+/ui-control/model-url/set');
+    client.subscribe('homie/+/ui-control/metadata-url/set');
 });

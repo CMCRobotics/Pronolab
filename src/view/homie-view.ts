@@ -11,6 +11,8 @@ export class HomieView {
     private webcam: any;
     private labelContainer: HTMLElement;
     private maxPredictions: number;
+    private modelURL: string | null = null;
+    private metadataURL: string | null = null;
 
 
     constructor(container: HTMLElement, mqtt: MqttClient) {
@@ -22,17 +24,26 @@ export class HomieView {
     }
 
     public async init() {
-        const modelURL = "./models/sign-language/model.json";
-        const metadataURL = "./models/sign-language/metadata.json";
-        this.model = await tmImage.load(modelURL, metadataURL);
-        this.maxPredictions = this.model.getTotalClasses();
         this.mqtt.on('message', (topic, payload) => {
             const message = payload.toString();
             logger.info(`[MQTT] message received`, { topic, message });
             if (topic.endsWith('ui-control/switch/set')) {
                 this.show(message);
+            } else if (topic.endsWith('ui-control/model-url/set')) {
+                this.modelURL = message;
+                this.loadModel();
+            } else if (topic.endsWith('ui-control/metadata-url/set')) {
+                this.metadataURL = message;
+                this.loadModel();
             }
         });
+    }
+
+    private async loadModel() {
+        if (this.modelURL && this.metadataURL) {
+            this.model = await tmImage.load(this.modelURL, this.metadataURL);
+            this.maxPredictions = this.model.getTotalClasses();
+        }
     }
 
     public show(view: string) {
@@ -42,6 +53,10 @@ export class HomieView {
     }
 
     private async initWebcam() {
+        if (!this.model) {
+            logger.error('model not loaded yet');
+            return;
+        }
         const flip = true; // whether to flip the webcam
         this.webcam = new tmImage.Webcam(200, 200, flip); // width, height, flip
         await this.webcam.setup(); // request access to the webcam
