@@ -61,7 +61,10 @@ export class ViewManager {
         this.activeView = this.views[name];
         if (this.activeView) {
             this.activeView.init();
-            this.setModel();
+            this.activeView.show();
+            if (name !== 'upload-model') {
+                this.setModel();
+            }
         }
     }
 

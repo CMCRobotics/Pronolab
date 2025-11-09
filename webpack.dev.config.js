@@ -5,5 +5,8 @@ module.exports = merge(viewConfig, {
     mode: 'development',
     devServer: {
         static: './public',
+        proxy: {
+            '/upload-model': 'http://localhost:3000',
+        },
     },
 });
