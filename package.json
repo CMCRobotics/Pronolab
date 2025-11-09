@@ -11,6 +11,13 @@
     "teachable-machine",
     "tensorflow"
   ],
+  "scripts": {
+    "build": "npm run build:lib && npm run build:core && npm run build:esm && npm run build:dev",
+    "build:lib": "webpack --mode production --config webpack.lib.config.js",
+    "build:core": "webpack --mode production --config webpack.lib.core.config.js",
+    "build:esm": "webpack --mode production --config webpack.lib.esm.config.js",
+    "build:dev": "webpack --mode development --config webpack.lib.dev.config.js"
+  },
   "author": "Brice Copy",
   "license": "GPL-3.0-only",
   "devDependencies": {
