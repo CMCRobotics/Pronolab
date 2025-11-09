@@ -1,55 +1,47 @@
 import { MqttClient } from 'mqtt';
+import { BaseView } from './base-view';
 import logger from 'loglevel';
 
 const tmImage = (window as any).tmImage;
 
-export class HomieView {
-    private container: HTMLElement;
-    private mqtt: MqttClient;
-
-    private model: any;
+export class ImageView extends BaseView {
     private webcam: any;
     private labelContainer: HTMLElement;
-    private maxPredictions: number;
-    private modelURL: string | null = null;
-    private metadataURL: string | null = null;
-
 
     constructor(container: HTMLElement, mqtt: MqttClient) {
-        this.container = container;
-        this.mqtt = mqtt;
+        super(container, mqtt);
         this.labelContainer = document.createElement('div');
         this.container.appendChild(this.labelContainer);
-        this.maxPredictions = 0;
     }
 
     public async init() {
-        this.mqtt.on('message', (topic, payload) => {
-            const message = payload.toString();
-            logger.info(`[MQTT] message received`, { topic, message });
-            if (topic.endsWith('ui-control/switch/set')) {
-                this.show(message);
-            } else if (topic.endsWith('ui-control/model-url/set')) {
-                this.modelURL = message;
-                this.loadModel();
-            } else if (topic.endsWith('ui-control/metadata-url/set')) {
-                this.metadataURL = message;
-                this.loadModel();
-            }
-        });
+        // empty for now
     }
 
-    private async loadModel() {
+    public show() {
+        this.initWebcam();
+    }
+
+    public hide() {
+        if (this.webcam) {
+            this.webcam.stop();
+        }
+        this.container.innerHTML = '';
+    }
+
+    protected async loadModel() {
         if (this.modelURL && this.metadataURL) {
+            logger.debug(`loading model from ${this.modelURL} and ${this.metadataURL}`);
             this.model = await tmImage.load(this.modelURL, this.metadataURL);
             this.maxPredictions = this.model.getTotalClasses();
+            logger.debug(`model loaded with ${this.maxPredictions} classes`);
         }
     }
 
-    public show(view: string) {
-        if (view === 'model-test') {
-            this.initWebcam();
-        }
+    protected async loop() {
+        this.webcam.update(); // update the webcam frame
+        await this.predict();
+        window.requestAnimationFrame(() => this.loop());
     }
 
     private async initWebcam() {
@@ -57,6 +49,7 @@ export class HomieView {
             logger.error('model not loaded yet');
             return;
         }
+        logger.debug('initializing webcam');
         const flip = true; // whether to flip the webcam
         this.webcam = new tmImage.Webcam(200, 200, flip); // width, height, flip
         await this.webcam.setup(); // request access to the webcam
@@ -69,12 +62,6 @@ export class HomieView {
         for (let i = 0; i < this.maxPredictions; i++) { // and class labels
             this.labelContainer.appendChild(document.createElement("div"));
         }
-    }
-
-    private async loop() {
-        this.webcam.update(); // update the webcam frame
-        await this.predict();
-        window.requestAnimationFrame(() => this.loop());
     }
 
     private async predict() {
