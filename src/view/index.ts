@@ -18,6 +18,10 @@ client.on('connect', () => {
     const deviceId = localStorage.getItem('deviceId');
 
     if (deviceId) {
+        const deviceIdContainer = document.getElementById('device-id-container');
+        if (deviceIdContainer) {
+            deviceIdContainer.innerText = deviceId;
+        }
         const viewManager = new ViewManager(container, client);
         viewManager.addView('image', new ImageView(container, client));
         viewManager.addView('audio', new AudioView(container, client));
