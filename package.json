@@ -18,7 +18,8 @@
     "build:esm": "webpack --mode production --config webpack.lib.esm.config.js",
     "build:dev": "webpack --mode development --config webpack.lib.dev.config.js",
     "build:view": "webpack --mode production --config webpack.view.config.js",
-    "start": "webpack-dev-server --config webpack.dev.config.js"
+    "start": "webpack-dev-server --config webpack.dev.config.js",
+    "init-teams": "node bin/init-teams.js"
   },
   "author": "Brice Copy",
   "license": "GPL-3.0-only",
