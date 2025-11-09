@@ -1,9 +1,11 @@
 import logger from 'loglevel';
+import { HomieView } from './view/homie-view';
 
-export { logger };
+export { logger, HomieView };
 
 const Pronolab = {
-  logger
+  logger,
+  HomieView
 };
 
 export default Pronolab;
