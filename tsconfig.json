@@ -18,8 +18,7 @@
     "useDefineForClassFields": false,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "types": ["jest", "node"]
+    "skipLibCheck": true
   },
   "include": ["src/**/*", "test/**/*", "integrationtest/**/*", "types/**/*"],
   "exclude": ["node_modules", "dist"]

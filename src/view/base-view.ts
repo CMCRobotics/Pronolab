@@ -1,15 +1,15 @@
-import { MqttClient } from 'mqtt';
+import { Client } from 'mqtt';
 import logger from 'loglevel';
 
 export abstract class BaseView {
     protected container: HTMLElement;
-    protected mqtt: MqttClient;
+    protected mqtt: Client;
     protected model: any;
     protected maxPredictions: number;
     protected modelURL: string | null = null;
     protected metadataURL: string | null = null;
 
-    constructor(container: HTMLElement, mqtt: MqttClient) {
+    constructor(container: HTMLElement, mqtt: Client) {
         this.container = container;
         this.mqtt = mqtt;
         this.maxPredictions = 0;
