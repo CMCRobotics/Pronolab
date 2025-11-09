@@ -1,8 +1,7 @@
+import * as tmAudio from '@tensorflow-models/speech-commands';
 import { MqttClient } from 'mqtt';
 import { BaseView } from './base-view';
 import logger from 'loglevel';
-
-const tmAudio = (window as any).tmAudio;
 
 export class AudioView extends BaseView {
     private labelContainer: HTMLElement;
@@ -31,13 +30,7 @@ export class AudioView extends BaseView {
     protected async loadModel() {
         if (this.modelURL && this.metadataURL) {
             logger.debug(`loading model from ${this.modelURL} and ${this.metadataURL}`);
-            this.model = await tmAudio.create(
-                {
-                    baseUrl: this.modelURL,
-                    words: ['background noise', ...this.metadata.words],
-                },
-                this.metadataURL
-            );
+            this.model = await tmAudio.create('BROWSER_FFT');
             this.maxPredictions = this.model.getTotalClasses();
             logger.debug(`model loaded with ${this.maxPredictions} classes`);
         }

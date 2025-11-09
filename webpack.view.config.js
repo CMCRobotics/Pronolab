@@ -9,5 +9,12 @@ module.exports = merge(baseConfig, {
     output: {
       filename: 'pronolab-view.js',
       path: path.resolve(__dirname, 'public'),
+    },
+    resolve: {
+      fallback: {
+        "fs": false,
+        "path": false,
+        "util": false
+      }
     }
   });

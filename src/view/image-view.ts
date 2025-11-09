@@ -1,8 +1,7 @@
+import * as tmImage from '@teachablemachine/image';
 import { MqttClient } from 'mqtt';
 import { BaseView } from './base-view';
 import logger from 'loglevel';
-
-const tmImage = (window as any).tmImage;
 
 export class ImageView extends BaseView {
     private webcam: any;
