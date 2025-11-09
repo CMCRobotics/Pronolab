@@ -46,11 +46,11 @@ function showMainView() {
         viewManager.addView('pose', new PoseView(container, client));
         viewManager.addView('upload-model', new UploadModelView(container, client));
         viewManager.init();
-        client.subscribe(`homie/${deviceId}/ui-control/switch/set`);
-        client.subscribe(`homie/${deviceId}/ui-control/model-url/set`);
-        client.subscribe(`homie/${deviceId}/ui-control/metadata-url/set`);
-        client.subscribe(`homie/${deviceId}/ui-control/model-type/set`);
-        client.subscribe(`homie/${deviceId}/ui-control/model-test/set`);
+        client.subscribe(`homie/terminal-${deviceId}/ui-control/switch/set`);
+        client.subscribe(`homie/terminal-${deviceId}/ui-control/model-url/set`);
+        client.subscribe(`homie/terminal-${deviceId}/ui-control/metadata-url/set`);
+        client.subscribe(`homie/terminal-${deviceId}/ui-control/model-type/set`);
+        client.subscribe(`homie/terminal-${deviceId}/ui-control/model-test/set`);
 
         const uploadButton = document.createElement('button');
         uploadButton.innerText = 'Upload Model';

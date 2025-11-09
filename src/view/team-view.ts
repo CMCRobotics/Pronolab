@@ -61,7 +61,7 @@ export class TeamView extends BaseView {
         localStorage.setItem('teamId', teamId);
         const deviceId = localStorage.getItem('deviceId');
         if (deviceId) {
-            this.mqtt.publish(`homie/${deviceId}/team-id/set`, teamId);
+            this.mqtt.publish(`homie/terminal-${deviceId}/team-id/set`, teamId);
         }
         this.hide();
         this.onTeamSelected();
