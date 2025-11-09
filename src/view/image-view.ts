@@ -1,13 +1,13 @@
 import * as tmImage from '@teachablemachine/image';
-import { MqttClient } from 'mqtt';
+import { Client } from 'mqtt';
 import { BaseView } from './base-view';
-import logger from 'loglevel';
+import { logger } from '../logger';
 
 export class ImageView extends BaseView {
     private webcam: any;
     private labelContainer: HTMLElement;
 
-    constructor(container: HTMLElement, mqtt: MqttClient) {
+    constructor(container: HTMLElement, mqtt: Client) {
         super(container, mqtt);
         this.labelContainer = document.createElement('div');
         this.container.appendChild(this.labelContainer);
@@ -66,6 +66,7 @@ export class ImageView extends BaseView {
     private async predict() {
         // predict can take in an image, video or canvas html element
         const prediction = await this.model.predict(this.webcam.canvas);
+        this.handlePrediction(prediction);
         for (let i = 0; i < this.maxPredictions; i++) {
             const classPrediction =
                 prediction[i].className + ": " + prediction[i].probability.toFixed(2);

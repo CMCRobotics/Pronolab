@@ -1,13 +1,13 @@
 import * as tmPose from '@teachablemachine/pose';
-import { MqttClient } from 'mqtt';
+import { Client } from 'mqtt';
 import { BaseView } from './base-view';
-import logger from 'loglevel';
+import { logger } from '../logger';
 
 export class PoseView extends BaseView {
     private webcam: any;
     private labelContainer: HTMLElement;
 
-    constructor(container: HTMLElement, mqtt: MqttClient) {
+    constructor(container: HTMLElement, mqtt: Client) {
         super(container, mqtt);
         this.labelContainer = document.createElement('div');
         this.container.appendChild(this.labelContainer);

@@ -1,16 +1,16 @@
-import { MqttClient } from 'mqtt';
+import { Client } from 'mqtt';
 import { BaseView } from './base-view';
-import logger from 'loglevel';
+import { logger } from '../logger';
 
 export class ViewManager {
     private container: HTMLElement;
-    private mqtt: MqttClient;
+    private mqtt: Client;
     private views: { [key: string]: BaseView } = {};
     private activeView: BaseView | null = null;
     private modelURL: string | null = null;
     private metadataURL: string | null = null;
 
-    constructor(container: HTMLElement, mqtt: MqttClient) {
+    constructor(container: HTMLElement, mqtt: Client) {
         this.container = container;
         this.mqtt = mqtt;
     }
@@ -37,6 +37,17 @@ export class ViewManager {
                         this.activeView.show();
                     } else {
                         this.activeView.hide();
+                    }
+                }
+            } else if (topic.endsWith('ui-control/model-test/set')) {
+                if (this.activeView) {
+                    logger.info(`[ModelTest] received test request: ${message}`);
+                    try {
+                        const { className, minConfidence, duration } = JSON.parse(message);
+                        logger.info(`[ModelTest] triggering test for class "${className}" with min confidence ${minConfidence} for ${duration}ms`);
+                        this.activeView.testModel(className, minConfidence, duration);
+                    } catch (e) {
+                        logger.error(`[ModelTest] failed to parse test request: ${e}`);
                     }
                 }
             }

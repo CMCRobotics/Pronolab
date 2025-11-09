@@ -4,9 +4,7 @@ import { ImageView } from './image-view';
 import { AudioView } from './audio-view';
 import { PoseView } from './pose-view';
 import { DeviceView } from './device-view';
-import logger from 'loglevel';
-
-logger.setLevel('debug');
+import { logger } from '../logger';
 
 const container = document.getElementById('pronolab-container');
 if (!container) {
@@ -29,6 +27,7 @@ client.on('connect', () => {
         client.subscribe(`homie/${deviceId}/ui-control/model-url/set`);
         client.subscribe(`homie/${deviceId}/ui-control/metadata-url/set`);
         client.subscribe(`homie/${deviceId}/ui-control/model-type/set`);
+        client.subscribe(`homie/${deviceId}/ui-control/model-test/set`);
     } else {
         const deviceView = new DeviceView(container, client);
         deviceView.init();
