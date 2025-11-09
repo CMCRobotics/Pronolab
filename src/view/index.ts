@@ -6,6 +6,7 @@ import { PoseView } from './pose-view';
 import { DeviceView } from './device-view';
 import { TeamView } from './team-view';
 import { UploadModelView } from './upload-model-view';
+import { SessionControllerView } from './session-controller-view';
 import { logger } from '../logger';
 
 const container = document.getElementById('pronolab-container');
@@ -45,6 +46,7 @@ function showMainView() {
         viewManager.addView('audio', new AudioView(container, client));
         viewManager.addView('pose', new PoseView(container, client));
         viewManager.addView('upload-model', new UploadModelView(container, client));
+        viewManager.addView('session-controller', new SessionControllerView(container, client));
         viewManager.init();
         client.subscribe(`homie/terminal-${deviceId}/ui-control/switch/set`);
         client.subscribe(`homie/terminal-${deviceId}/ui-control/model-url/set`);
@@ -58,6 +60,13 @@ function showMainView() {
             viewManager['setActiveView']('upload-model');
         };
         container.appendChild(uploadButton);
+
+        const sessionControllerButton = document.createElement('button');
+        sessionControllerButton.innerText = 'Session Controller';
+        sessionControllerButton.onclick = () => {
+            viewManager['setActiveView']('session-controller');
+        };
+        container.appendChild(sessionControllerButton);
     }
 }
 

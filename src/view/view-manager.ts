@@ -62,7 +62,7 @@ export class ViewManager {
         if (this.activeView) {
             this.activeView.init();
             this.activeView.show();
-            if (name !== 'upload-model') {
+            if (name !== 'upload-model' && name !== 'session-controller') {
                 this.setModel();
             }
         }
