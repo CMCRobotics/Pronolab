@@ -17,10 +17,10 @@ export class TeamView extends BaseView {
     }
 
     public async init() {
-        this.mqtt.subscribe('homie/Gateway/+/name');
+        this.mqtt.subscribe('homie/+/info/name');
         this.mqtt.on('message', (topic, payload) => {
-            if (topic.startsWith('homie/Gateway/') && topic.endsWith('/name')) {
-                const teamId = topic.split('/')[2];
+            if (topic.endsWith('/info/name')) {
+                const teamId = topic.split('/')[1];
                 if (teamId.match(/^team-.*$/)) {
                     const teamName = payload.toString();
                     if (!this.teams.find(team => team.id === teamId)) {
