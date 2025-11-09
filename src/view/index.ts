@@ -5,6 +5,7 @@ import { AudioView } from './audio-view';
 import { PoseView } from './pose-view';
 import { DeviceView } from './device-view';
 import { TeamView } from './team-view';
+import { UploadModelView } from './upload-model-view';
 import { logger } from '../logger';
 
 const container = document.getElementById('pronolab-container');
@@ -43,12 +44,20 @@ function showMainView() {
         viewManager.addView('image', new ImageView(container, client));
         viewManager.addView('audio', new AudioView(container, client));
         viewManager.addView('pose', new PoseView(container, client));
+        viewManager.addView('upload-model', new UploadModelView(container, client));
         viewManager.init();
         client.subscribe(`homie/${deviceId}/ui-control/switch/set`);
         client.subscribe(`homie/${deviceId}/ui-control/model-url/set`);
         client.subscribe(`homie/${deviceId}/ui-control/metadata-url/set`);
         client.subscribe(`homie/${deviceId}/ui-control/model-type/set`);
         client.subscribe(`homie/${deviceId}/ui-control/model-test/set`);
+
+        const uploadButton = document.createElement('button');
+        uploadButton.innerText = 'Upload Model';
+        uploadButton.onclick = () => {
+            viewManager['setActiveView']('upload-model');
+        };
+        container.appendChild(uploadButton);
     }
 }
 
