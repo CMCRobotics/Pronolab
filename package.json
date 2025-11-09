@@ -1,6 +1,6 @@
 {
   "name": "@cmcrobotics/pronolab",
-  "version": "0.7.3",
+  "version": "0.1.0",
   "description": "A web UI orchestrator to assess machine learning models",
   "repository": "github:cmcrobotics/pronolab",
   "keywords": [
