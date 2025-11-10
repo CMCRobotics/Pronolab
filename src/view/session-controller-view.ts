@@ -49,13 +49,7 @@ export class SessionControllerView extends BaseView {
         document.getElementById('switch-to-model-test')?.addEventListener('click', () => this.switchToModelTest());
         document.getElementById('start-test')?.addEventListener('click', () => this.startTest());
 
-        const mqtt = this.session['mqtt'];
-        mqtt.subscribe(`homie/terminal-${this.deviceId}/statistics/prompt-results/log`);
-        mqtt.on('message', (topic, payload) => {
-            if (topic.endsWith('prompt-results/log')) {
-                this.logResult(payload.toString());
-            }
-        });
+        // The MQTT message handling will be done by the view itself
     }
 
     public show(): void {
