@@ -1,10 +1,11 @@
 import { Client } from 'mqtt';
+import { Session } from '../core/session';
 import { BaseView } from './base-view';
 import { logger } from '../logger';
 
 export class ViewManager {
     private container: HTMLElement;
-    private mqtt: Client;
+    private session: Session;
     private views: { [key: string]: BaseView } = {};
     private activeView: BaseView | null = null;
     private modelURL: string | null = null;
@@ -12,7 +13,7 @@ export class ViewManager {
 
     constructor(container: HTMLElement, mqtt: Client) {
         this.container = container;
-        this.mqtt = mqtt;
+        this.session = new Session(mqtt);
     }
 
     public addView(name: string, view: BaseView) {
@@ -20,7 +21,16 @@ export class ViewManager {
     }
 
     public init() {
-        this.mqtt.on('message', (topic, payload) => {
+        this.session.onTestStatusChanged.subscribe(status => {
+            // The view will handle displaying the status
+        });
+
+        this.session.onPrediction.subscribe(prediction => {
+            // The session will handle the prediction
+        });
+
+        const mqtt = this.session['mqtt'];
+        mqtt.on('message', (topic, payload) => {
             const message = payload.toString();
             logger.info(`[MQTT] message received`, { topic, message });
             if (topic.endsWith('ui-control/model-type/set')) {
@@ -45,7 +55,7 @@ export class ViewManager {
                     try {
                         const { className, minConfidence, duration } = JSON.parse(message);
                         logger.info(`[ModelTest] triggering test for class "${className}" with min confidence ${minConfidence} for ${duration}ms`);
-                        this.activeView.testModel(className, minConfidence, duration);
+                        this.session.testModel(className, minConfidence, duration);
                     } catch (e) {
                         logger.error(`[ModelTest] failed to parse test request: ${e}`);
                     }

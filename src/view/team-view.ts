@@ -1,4 +1,4 @@
-import { Client } from 'mqtt';
+import { Session } from '../core/session';
 import { BaseView } from './base-view';
 import { logger } from '../logger';
 
@@ -11,14 +11,15 @@ export class TeamView extends BaseView {
     private teams: Team[] = [];
     private onTeamSelected: () => void;
 
-    constructor(container: HTMLElement, mqtt: Client, onTeamSelected: () => void) {
-        super(container, mqtt);
+    constructor(container: HTMLElement, session: Session, onTeamSelected: () => void) {
+        super(container, session);
         this.onTeamSelected = onTeamSelected;
     }
 
     public async init() {
-        this.mqtt.subscribe('homie/+/info/name');
-        this.mqtt.on('message', (topic, payload) => {
+        const mqtt = this.session['mqtt'];
+        mqtt.subscribe('homie/+/info/name');
+        mqtt.on('message', (topic, payload) => {
             if (topic.endsWith('/info/name')) {
                 const teamId = topic.split('/')[1];
                 if (teamId.match(/^team-.*$/)) {
@@ -61,7 +62,7 @@ export class TeamView extends BaseView {
         localStorage.setItem('teamId', teamId);
         const deviceId = localStorage.getItem('deviceId');
         if (deviceId) {
-            this.mqtt.publish(`homie/terminal-${deviceId}/team-id/set`, teamId);
+            this.session['mqtt'].publish(`homie/terminal-${deviceId}/team-id/set`, teamId);
         }
         this.hide();
         this.onTeamSelected();

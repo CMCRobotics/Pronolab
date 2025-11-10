@@ -1,4 +1,5 @@
 import mqtt from 'mqtt';
+import { Session } from '../core/session';
 import { ViewManager } from './view-manager';
 import { ImageView } from './image-view';
 import { AudioView } from './audio-view';
@@ -32,7 +33,8 @@ client.on('connect', () => {
             showTeamView();
         }
     } else {
-        const deviceView = new DeviceView(container, client);
+        const session = new Session(client);
+        const deviceView = new DeviceView(container, session);
         deviceView.init();
         deviceView.show();
     }
@@ -42,11 +44,12 @@ function showMainView() {
     const deviceId = localStorage.getItem('deviceId');
     if (container && deviceId) {
         const viewManager = new ViewManager(container, client);
-        viewManager.addView('image', new ImageView(container, client));
-        viewManager.addView('audio', new AudioView(container, client));
-        viewManager.addView('pose', new PoseView(container, client));
-        viewManager.addView('upload-model', new UploadModelView(container, client));
-        viewManager.addView('session-controller', new SessionControllerView(container, client));
+        const session = viewManager['session'];
+        viewManager.addView('image', new ImageView(container, session));
+        viewManager.addView('audio', new AudioView(container, session));
+        viewManager.addView('pose', new PoseView(container, session));
+        viewManager.addView('upload-model', new UploadModelView(container, session));
+        viewManager.addView('session-controller', new SessionControllerView(container, session));
         viewManager.init();
         client.subscribe(`homie/terminal-${deviceId}/ui-control/switch/set`);
         client.subscribe(`homie/terminal-${deviceId}/ui-control/model-url/set`);
@@ -72,7 +75,8 @@ function showMainView() {
 
 function showTeamView() {
     if (container) {
-        const teamView = new TeamView(container, client, () => {
+        const session = new Session(client);
+        const teamView = new TeamView(container, session, () => {
             showMainView();
         });
         teamView.init();

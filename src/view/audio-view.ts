@@ -1,15 +1,13 @@
 import * as tmAudio from '@tensorflow-models/speech-commands';
-import { MqttClient } from 'mqtt';
+import { Session } from '../core/session';
 import { BaseView } from './base-view';
 import logger from 'loglevel';
 
 export class AudioView extends BaseView {
-    private labelContainer: HTMLElement;
+    private labelContainer: HTMLElement | null = null;
 
-    constructor(container: HTMLElement, mqtt: MqttClient) {
-        super(container, mqtt);
-        this.labelContainer = document.createElement('div');
-        this.container.appendChild(this.labelContainer);
+    constructor(container: HTMLElement, session: Session) {
+        super(container, session);
     }
 
     public async init() {
@@ -46,11 +44,22 @@ export class AudioView extends BaseView {
             return;
         }
         logger.debug('start listening');
-        this.model.listen((result: { scores: { className: string, score: number }[] }) => {
-            for (let i = 0; i < this.maxPredictions; i++) {
-                const classPrediction =
-                    result.scores[i].className + ": " + result.scores[i].score.toFixed(2);
-                (this.labelContainer.childNodes[i] as HTMLElement).innerHTML = classPrediction;
+
+        this.labelContainer = document.createElement('div');
+        this.container.appendChild(this.labelContainer);
+        for (let i = 0; i < this.maxPredictions; i++) {
+            this.labelContainer.appendChild(document.createElement("div"));
+        }
+
+        this.model.listen((result: { scores: { className: string, probability: number }[] }) => {
+            const prediction = result.scores.map(s => ({ className: s.className, probability: s.probability }));
+            this.session.onPrediction.next(prediction);
+            if (this.labelContainer) {
+                for (let i = 0; i < this.maxPredictions; i++) {
+                    const classPrediction =
+                        result.scores[i].className + ": " + result.scores[i].probability.toFixed(2);
+                    (this.labelContainer.childNodes[i] as HTMLElement).innerHTML = classPrediction;
+                }
             }
         });
     }

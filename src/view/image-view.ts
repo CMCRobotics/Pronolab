@@ -1,16 +1,14 @@
 import * as tmImage from '@teachablemachine/image';
-import { Client } from 'mqtt';
+import { Session } from '../core/session';
 import { BaseView } from './base-view';
 import { logger } from '../logger';
 
 export class ImageView extends BaseView {
     private webcam: any;
-    private labelContainer: HTMLElement;
+    private labelContainer: HTMLElement | null = null;
 
-    constructor(container: HTMLElement, mqtt: Client) {
-        super(container, mqtt);
-        this.labelContainer = document.createElement('div');
-        this.container.appendChild(this.labelContainer);
+    constructor(container: HTMLElement, session: Session) {
+        super(container, session);
     }
 
     public async init() {
@@ -58,6 +56,9 @@ export class ImageView extends BaseView {
         // append elements to the DOM
         this.container.appendChild(this.webcam.canvas);
 
+        this.labelContainer = document.createElement('div');
+        this.container.appendChild(this.labelContainer);
+
         for (let i = 0; i < this.maxPredictions; i++) { // and class labels
             this.labelContainer.appendChild(document.createElement("div"));
         }
@@ -66,11 +67,13 @@ export class ImageView extends BaseView {
     private async predict() {
         // predict can take in an image, video or canvas html element
         const prediction = await this.model.predict(this.webcam.canvas);
-        this.handlePrediction(prediction);
-        for (let i = 0; i < this.maxPredictions; i++) {
-            const classPrediction =
-                prediction[i].className + ": " + prediction[i].probability.toFixed(2);
-            (this.labelContainer.childNodes[i] as HTMLElement).innerHTML = classPrediction;
+        this.session.onPrediction.next(prediction);
+        if (this.labelContainer) {
+            for (let i = 0; i < this.maxPredictions; i++) {
+                const classPrediction =
+                    prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+                (this.labelContainer.childNodes[i] as HTMLElement).innerHTML = classPrediction;
+            }
         }
     }
 }

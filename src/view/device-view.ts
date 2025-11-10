@@ -1,12 +1,12 @@
-import { Client } from 'mqtt';
+import { Session } from '../core/session';
 import { BaseView } from './base-view';
 
 export class DeviceView extends BaseView {
     private form: HTMLFormElement;
     private input: HTMLInputElement;
 
-    constructor(container: HTMLElement, mqtt: Client) {
-        super(container, mqtt);
+    constructor(container: HTMLElement, session: Session) {
+        super(container, session);
 
         this.form = document.createElement('form');
         this.form.style.display = 'flex';

@@ -1,12 +1,12 @@
-import { Client } from 'mqtt';
+import { Session } from '../core/session';
 import { BaseView } from './base-view';
 import { logger } from '../logger';
 
 export class SessionControllerView extends BaseView {
     private deviceId: string | null = null;
 
-    constructor(container: HTMLElement, mqtt: Client) {
-        super(container, mqtt);
+    constructor(container: HTMLElement, session: Session) {
+        super(container, session);
     }
 
     public async init(): Promise<void> {
@@ -49,8 +49,9 @@ export class SessionControllerView extends BaseView {
         document.getElementById('switch-to-model-test')?.addEventListener('click', () => this.switchToModelTest());
         document.getElementById('start-test')?.addEventListener('click', () => this.startTest());
 
-        this.mqtt.subscribe(`homie/terminal-${this.deviceId}/statistics/prompt-results/log`);
-        this.mqtt.on('message', (topic, payload) => {
+        const mqtt = this.session['mqtt'];
+        mqtt.subscribe(`homie/terminal-${this.deviceId}/statistics/prompt-results/log`);
+        mqtt.on('message', (topic, payload) => {
             if (topic.endsWith('prompt-results/log')) {
                 this.logResult(payload.toString());
             }
@@ -75,18 +76,18 @@ export class SessionControllerView extends BaseView {
 
     private setModelType() {
         const modelType = (document.getElementById('model-type') as HTMLSelectElement).value;
-        this.mqtt.publish(`homie/terminal-${this.deviceId}/ui-control/model-type/set`, modelType);
+        this.session['mqtt'].publish(`homie/terminal-${this.deviceId}/ui-control/model-type/set`, modelType);
         logger.info(`[SessionController] set model type to: ${modelType}`);
     }
 
     private switchToModelTest() {
-        this.mqtt.publish(`homie/terminal-${this.deviceId}/ui-control/switch/set`, 'model-test');
+        this.session['mqtt'].publish(`homie/terminal-${this.deviceId}/ui-control/switch/set`, 'model-test');
         logger.info(`[SessionController] switched to model-test view`);
     }
 
     private startTest() {
         const sequenceName = (document.getElementById('sequence-name') as HTMLInputElement).value;
-        this.mqtt.publish(`homie/terminal-${this.deviceId}/ui-control/model-test/set`, sequenceName);
+        this.session['mqtt'].publish(`homie/terminal-${this.deviceId}/ui-control/model-test/set`, sequenceName);
         logger.info(`[SessionController] started test sequence: ${sequenceName}`);
     }
 
