@@ -1,31 +1,33 @@
 import * as tmAudio from '@tensorflow-models/speech-commands';
 import { Session } from '../core/session';
-import { BaseView } from './base-view';
+import { ModelTestBaseView } from './model-test-base-view'; // Changed import
 import logger from 'loglevel';
 
-export class AudioView extends BaseView {
-    private labelContainer: HTMLElement | null = null;
+export class AudioView extends ModelTestBaseView { // Changed inheritance
+    // labelContainer is now inherited from ModelTestBaseView
 
     constructor(container: HTMLElement, session: Session) {
         super(container, session);
     }
 
-    public async init() {
+    public async init(): Promise<void> {
+        await super.init(); // Call super.init if it has logic
         // empty for now
     }
 
-    public show() {
+    public show(): void {
+        super.setupLabelContainer(); // Setup the label container
         this.startListening();
     }
 
-    public hide() {
+    public hide(): void {
         if (this.model) {
             this.model.stopListening();
         }
-        this.container.innerHTML = '';
+        super.hide(); // Call super.hide to clear container
     }
 
-    protected async loadModel() {
+    protected async loadModel(): Promise<void> {
         if (this.modelURL && this.metadataURL) {
             logger.debug(`loading model from ${this.modelURL} and ${this.metadataURL}`);
             this.model = await tmAudio.create('BROWSER_FFT');
@@ -34,7 +36,7 @@ export class AudioView extends BaseView {
         }
     }
 
-    protected async loop() {
+    protected async loop(): Promise<void> {
         // audio loop is handled by the library
     }
 
@@ -45,27 +47,20 @@ export class AudioView extends BaseView {
         }
         logger.debug('start listening');
 
-        this.labelContainer = document.createElement('div');
-        this.container.appendChild(this.labelContainer);
-        for (let i = 0; i < this.maxPredictions; i++) {
-            this.labelContainer.appendChild(document.createElement("div"));
-        }
-
         this.model.listen((result: { scores: { className: string, probability: number }[] }) => {
             const prediction = result.scores.map(s => ({ className: s.className, probability: s.probability }));
             this.session.onPrediction.next(prediction);
-            if (this.labelContainer) {
-                for (let i = 0; i < this.maxPredictions; i++) {
-                    const classPrediction =
-                        result.scores[i].className + ": " + result.scores[i].probability.toFixed(2);
-                    (this.labelContainer.childNodes[i] as HTMLElement).innerHTML = classPrediction;
-                }
+            // Use the inherited updateLabel method
+            for (let i = 0; i < this.maxPredictions; i++) {
+                const classPrediction =
+                    result.scores[i].className + ": " + result.scores[i].probability.toFixed(2);
+                this.updateLabel(i, classPrediction);
             }
         });
     }
 
+    // Metadata logic remains specific to AudioView
     private get metadata(): { words: string[] } {
-        // a bit of a hack to get the metadata from the URL
         const metadata: { words: string[] } = {
             words: []
         };

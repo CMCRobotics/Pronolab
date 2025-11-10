@@ -1,32 +1,34 @@
 import * as tmPose from '@teachablemachine/pose';
 import { Session } from '../core/session';
-import { BaseView } from './base-view';
+import { ModelTestBaseView } from './model-test-base-view'; // Changed import
 import { logger } from '../logger';
 
-export class PoseView extends BaseView {
+export class PoseView extends ModelTestBaseView { // Changed inheritance
     private webcam: any;
-    private labelContainer: HTMLElement | null = null;
+    // labelContainer is now inherited from ModelTestBaseView
 
     constructor(container: HTMLElement, session: Session) {
         super(container, session);
     }
 
-    public async init() {
+    public async init(): Promise<void> {
+        await super.init(); // Call super.init if it has logic
         // empty for now
     }
 
-    public show() {
+    public show(): void {
+        super.setupLabelContainer(); // Setup the label container
         this.initWebcam();
     }
 
-    public hide() {
+    public hide(): void {
         if (this.webcam) {
             this.webcam.stop();
         }
-        this.container.innerHTML = '';
+        super.hide(); // Call super.hide to clear container
     }
 
-    protected async loadModel() {
+    protected async loadModel(): Promise<void> {
         if (this.modelURL && this.metadataURL) {
             logger.debug(`loading model from ${this.modelURL} and ${this.metadataURL}`);
             this.model = await tmPose.load(this.modelURL, this.metadataURL);
@@ -35,7 +37,7 @@ export class PoseView extends BaseView {
         }
     }
 
-    protected async loop() {
+    protected async loop(): Promise<void> {
         this.webcam.update(); // update the webcam frame
         await this.predict();
         window.requestAnimationFrame(() => this.loop());
@@ -56,13 +58,6 @@ export class PoseView extends BaseView {
 
         await this.webcam.play();
         window.requestAnimationFrame(() => this.loop());
-
-        this.labelContainer = document.createElement('div');
-        this.container.appendChild(this.labelContainer);
-
-        for (let i = 0; i < this.maxPredictions; i++) { // and class labels
-            this.labelContainer.appendChild(document.createElement("div"));
-        }
     }
 
     private async predict() {
@@ -70,12 +65,11 @@ export class PoseView extends BaseView {
         const { pose, posenetOutput } = await this.model.estimatePose(this.webcam.canvas);
         const prediction = await this.model.predict(posenetOutput);
         this.session.onPrediction.next(prediction);
-        if (this.labelContainer) {
-            for (let i = 0; i < this.maxPredictions; i++) {
-                const classPrediction =
-                    prediction[i].className + ": " + prediction[i].probability.toFixed(2);
-                (this.labelContainer.childNodes[i] as HTMLElement).innerHTML = classPrediction;
-            }
+        // Use the inherited updateLabel method
+        for (let i = 0; i < this.maxPredictions; i++) {
+            const classPrediction =
+                prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+            this.updateLabel(i, classPrediction);
         }
     }
 }
