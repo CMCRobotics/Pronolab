@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Model</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload Teachable Machine Model</h1>
+    <form id="upload-form" enctype="multipart/form-data">
+        <label for="modelName">Model Name:</label>
+        <input type="text" name="modelName" required>
+        <br>
+        <label for="modelArchive">Model Archive (.zip):</label>
+        <input type="file" name="modelArchive" accept=".zip,application/zip,application/x-zip,application/x-zip-compressed" required>
+        <br>
+        <input type="hidden" name="teamId" id="teamId">
+        <input type="hidden" name="deviceId" id="deviceId">
+        <button type="submit">Upload</button>
+    </form>
+    <script>
+        document.getElementById('teamId').value = localStorage.getItem('teamId');
+        document.getElementById('deviceId').value = localStorage.getItem('deviceId');
+
+        document.getElementById('upload-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const response = await fetch('/upload-model', {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                alert('File uploaded successfully');
+            } else {
+                alert('File upload failed');
+            }
+        });
+    </script>
+</body>
+</html>

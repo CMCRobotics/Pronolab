@@ -50,11 +50,12 @@ export class PoseView extends BaseView {
         const flip = true; // whether to flip the webcam
         this.webcam = new tmPose.Webcam(200, 200, flip); // width, height, flip
         await this.webcam.setup(); // request access to the webcam
+
+        // append elements to the DOM before playing
+        this.container.appendChild(this.webcam.canvas);
+
         await this.webcam.play();
         window.requestAnimationFrame(() => this.loop());
-
-        // append elements to the DOM
-        this.container.appendChild(this.webcam.canvas);
 
         this.labelContainer = document.createElement('div');
         this.container.appendChild(this.labelContainer);

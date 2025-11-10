@@ -70,6 +70,7 @@ export class ViewManager {
         }
         this.activeView = this.views[name];
         if (this.activeView) {
+            this.container.style.display = 'block';
             this.activeView.init();
             this.activeView.show();
             if (name !== 'upload-model' && name !== 'session-controller') {
