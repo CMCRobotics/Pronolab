@@ -49,6 +49,7 @@
     "webpack-merge": "^6.0.1"
   },
   "dependencies": {
+    "@cmcrobotics/homie-lit": "^0.7.3",
     "@teachablemachine/image": "0.8.3",
     "@teachablemachine/pose": "0.8.3",
     "@tensorflow-models/speech-commands": "0.4.0",
