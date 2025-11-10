@@ -1,4 +1,3 @@
-import { Client } from 'mqtt';
 import { Session } from '../core/session';
 import { BaseView } from './base-view';
 import { logger } from '../logger';
@@ -10,10 +9,12 @@ export class ViewManager {
     private activeView: BaseView | null = null;
     private modelURL: string | null = null;
     private metadataURL: string | null = null;
+    private deviceId: string | null = null;
 
-    constructor(container: HTMLElement, mqtt: Client) {
+    constructor(container: HTMLElement, session: Session) {
         this.container = container;
-        this.session = new Session(mqtt);
+        this.session = session;
+        this.deviceId = localStorage.getItem('deviceId');
     }
 
     public addView(name: string, view: BaseView) {
@@ -21,27 +22,28 @@ export class ViewManager {
     }
 
     public init() {
-        this.session.onTestStatusChanged.subscribe(status => {
-            // The view will handle displaying the status
-        });
+        if (!this.deviceId) {
+            logger.error('Device ID not found');
+            return;
+        }
 
-        this.session.onPrediction.subscribe(prediction => {
-            // The session will handle the prediction
-        });
+        this.session.topic(`homie/terminal-${this.deviceId}/ui-control/model-type/set`)
+            .subscribe(message => this.setActiveView(message));
 
-        const mqtt = this.session['mqtt'];
-        mqtt.on('message', (topic, payload) => {
-            const message = payload.toString();
-            logger.info(`[MQTT] message received`, { topic, message });
-            if (topic.endsWith('ui-control/model-type/set')) {
-                this.setActiveView(message);
-            } else if (topic.endsWith('ui-control/model-url/set')) {
+        this.session.topic(`homie/terminal-${this.deviceId}/ui-control/model-url/set`)
+            .subscribe(message => {
                 this.modelURL = message;
                 this.setModel();
-            } else if (topic.endsWith('ui-control/metadata-url/set')) {
+            });
+
+        this.session.topic(`homie/terminal-${this.deviceId}/ui-control/metadata-url/set`)
+            .subscribe(message => {
                 this.metadataURL = message;
                 this.setModel();
-            } else if (topic.endsWith('ui-control/switch/set')) {
+            });
+
+        this.session.topic(`homie/terminal-${this.deviceId}/ui-control/switch/set`)
+            .subscribe(message => {
                 if (this.activeView) {
                     if (message === 'model-test') {
                         this.activeView.show();
@@ -49,7 +51,10 @@ export class ViewManager {
                         this.activeView.hide();
                     }
                 }
-            } else if (topic.endsWith('ui-control/model-test/set')) {
+            });
+
+        this.session.topic(`homie/terminal-${this.deviceId}/ui-control/model-test/set`)
+            .subscribe(message => {
                 if (this.activeView) {
                     logger.info(`[ModelTest] received test request: ${message}`);
                     try {
@@ -60,8 +65,7 @@ export class ViewManager {
                         logger.error(`[ModelTest] failed to parse test request: ${e}`);
                     }
                 }
-            }
-        });
+            });
     }
 
     private setActiveView(name: string) {

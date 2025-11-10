@@ -70,18 +70,18 @@ export class SessionControllerView extends BaseView {
 
     private setModelType() {
         const modelType = (document.getElementById('model-type') as HTMLSelectElement).value;
-        this.session['mqtt'].publish(`homie/terminal-${this.deviceId}/ui-control/model-type/set`, modelType);
+        this.session.publish(`homie/terminal-${this.deviceId}/ui-control/model-type/set`, modelType);
         logger.info(`[SessionController] set model type to: ${modelType}`);
     }
 
     private switchToModelTest() {
-        this.session['mqtt'].publish(`homie/terminal-${this.deviceId}/ui-control/switch/set`, 'model-test');
+        this.session.publish(`homie/terminal-${this.deviceId}/ui-control/switch/set`, 'model-test');
         logger.info(`[SessionController] switched to model-test view`);
     }
 
     private startTest() {
         const sequenceName = (document.getElementById('sequence-name') as HTMLInputElement).value;
-        this.session['mqtt'].publish(`homie/terminal-${this.deviceId}/ui-control/model-test/set`, sequenceName);
+        this.session.publish(`homie/terminal-${this.deviceId}/ui-control/model-test/set`, sequenceName);
         logger.info(`[SessionController] started test sequence: ${sequenceName}`);
     }
 
