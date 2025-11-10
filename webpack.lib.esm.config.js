@@ -16,6 +16,7 @@ module.exports = merge(baseConfig, {
     outputModule: true
   },
   externals: {
+    'homie-lit' : 'homie-lit',
     'rxjs': 'rxjs',
     'mqtt': 'mqtt',
     'loglevel': 'loglevel'

@@ -12,6 +12,7 @@ module.exports = merge(baseConfig, {
     globalObject: 'this'
   },
   externals: {
+    'homie-lit' : 'homie-lit',
     'rxjs': 'rxjs',
     'mqtt': 'mqtt',
     'loglevel': 'loglevel'
